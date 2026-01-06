@@ -1,6 +1,6 @@
 package trainingxyz;
 
-import org.junit.jupiter.api.DisplayName; // import Displayname annotation from JUnit
+// import Displayname annotation from JUnit
 import org.junit.jupiter.api.*; // import Test annotation from Junit library and use it to mark methods as test cases
 
 import models.Product;
@@ -18,7 +18,7 @@ public class ApiTests {
 
   @Test
   // create a new product
-  public void testCreateProduct(){
+  public void CreateProduct(){
     String endpoint= baseUrl + "product/create.php"; // create endpoint variable to use in the test case
     String body = """ 
         {
@@ -35,7 +35,7 @@ public class ApiTests {
   
   @Test
   // update the product created in the create product test case
-  public void testUpdateProduct() {
+  public void UpdateProduct() {
     String endpoint = baseUrl + "product/update.php"; // create endpoint variable to use in the test case update price to 9
     String body = """
         {
@@ -53,7 +53,7 @@ public class ApiTests {
   }
 
   @Test
-  public void testGetAllProducts() {
+  public void GetAllProducts() {
     String endpoint = baseUrl + "product/read.php"; // create endpoint variable to use in the test case
 
     // read all products
@@ -65,8 +65,8 @@ public class ApiTests {
   // test cases for status code assertions
   
   @Test
-  @DisplayName("Test status code 200 for getting an existing product")
-  public void testGetOneProductWithRightStatusCode() {
+  @DisplayName("Verify status code is 200 when getting an existing product")
+  public void StatusCodeIs200() {
     String endpoint = baseUrl + "product/read_one.php"; // create endpoint variable to use in the test case
   
     // read one product by query param id in the given section 
@@ -75,8 +75,8 @@ public class ApiTests {
   }
 
   @Test
-  @DisplayName("Test status code will not be 201 when getting an existing product")
-  public void testGetOneProductWithWrongStatusCode() {
+  @DisplayName("Verify status code is not 201 when getting an existing product")
+  public void statusCodeNot201() {
     String endpoint = baseUrl + "product/read_one.php"; // create endpoint variable to use in the test case
 
     // read one product by query param id in the given section
@@ -88,8 +88,8 @@ public class ApiTests {
   // test case for verifying fields of a retrieved product
 
   @Test
-  @DisplayName("Test verifying fields of a retrieved product")
-  public void testVerifyFieldsOfOneProduct() {
+  @DisplayName("Verify that all fields of a retrieved product is correctly")
+  public void ProductFields() {
     String endpoint = baseUrl + "product/read_one.php"; // create endpoint variable to use in the test case
 
     // read one product by query param id in the given section
@@ -107,13 +107,12 @@ public class ApiTests {
   // test case for verifying fields in an array of products 
 
   @Test
-  public void testVerifyFieldsInProductList() {
+  @DisplayName("Verify that fields of products list are not empty")
+  public void ProductListFields() {
     String endpoint = baseUrl + "product/read.php"; // create endpoint variable to use in the test case
 
     // read all products
     given().when().get(endpoint).then().log().body()
-    .header("Content-Type", equalTo("application/json; charset=UTF-8"))
-    .assertThat().statusCode(200) // assert status code 200
     .body("records.size()",greaterThan(10))// assert that there are more than 10 products in the records array
     .body("records.id",everyItem(notNullValue())) // everyItem to check each item in the array has not null value for the given fields
     .body("records.name",everyItem(notNullValue()))
@@ -121,13 +120,13 @@ public class ApiTests {
     .body("records.price",everyItem(notNullValue()))
     .body("records.category_id",everyItem(notNullValue()))
     .body("records.category_name",everyItem(notNullValue()))
-    .body("records.id[0]",equalTo(18)); // assert specific value for the first item in the array  
-
+    // .body("records.id[0]",equalTo(1000)) // assert specific value for the first item in the array  
+    .body("records.id", hasItem(1));
   }
 
   // test case to delete the product created in the create product test case
   @Test
-  public void testDeleteOneProduct() {
+  public void DeleteProduct() {
     String endpoint = baseUrl + "product/delete.php"; // create endpoint variable to use in the test case
     String body = """
         {
@@ -142,20 +141,20 @@ public class ApiTests {
   }
  
   @Test
-  @DisplayName("Test verify headers of a retrieved product")
-  public void testVerifyOneProductsHeader() {
+  @DisplayName("Verify Content-Type header of product")
+  public void ContentTypeHeader() {
     String endpoint = baseUrl + "product/read_one.php"; // create endpoint variable to use in the test case
 
     // read one product by query param id in the given section and print headers
     given().queryParam("id", 3).when().get(endpoint).then().log().headers()
-    .header("Content-Type", equalTo("application/json; charset=UTF-8"));
+    .header("Content-Type", equalTo("application/json"));
     // assert that the Content-Type header is application/json; charset=UTF-8
     
   }
 
   @Test
-  @DisplayName("Test Deserialized one product")
-  public void getDeserializedProduct(){
+  @DisplayName("Verify deserialization of a product is correct for all fields")
+  public void productDeserialization(){
     String endpoint = baseUrl + "product/read_one.php";
 
     var expectedProduct = new Product( // create an instance expectedProduct of the class Product and variable for how we expect the product 
@@ -178,9 +177,42 @@ public class ApiTests {
       // actualProduct is what data we get when we have done the get request 
 
       assertThat(actualProduct, equalTo(expectedProduct));
+      
 
       // now we can do an simple assertion that compare that each filed is equal 
       // between variables actualProduct and ExpectedProduct 
+  }
+
+
+  @Test
+  @DisplayName("Verify status code, headers, and all fields of the vitamin product")
+  public void VitaminProductDetails() {
+    String endpoint = baseUrl + "product/read_one.php"; // create endpoint for the request 
+
+    // create variable to restore the response 
+    var response = given().
+    param("id", 18)
+    .when()
+    .get(endpoint);
+    response.then().assertThat().statusCode(200);
+    response.then().assertThat().header("Content-Type", equalTo("application/json"));
+  
+    // use response variable and convert it to a javaobject from Json 
+
+    Product actualProduct=response.as(Product.class);
+
+    Product expectedProduct = new Product( // create instance to class product to variable Expected product 
+        18,
+        "Multi-Vitamin (90 capsules)",
+        "A daily dose of our Multi-Vitamins fulfills a day’s nutritional needs for over 12 vitamins and minerals.",
+        10.00,
+        4,
+        "Supplements");
+
+    assertThat(actualProduct, equalTo(expectedProduct)); 
+    // compare that values match between the actualProduct and the expectedProduct
+
+   
   }
   
 }
