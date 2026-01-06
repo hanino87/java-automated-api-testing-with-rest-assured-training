@@ -66,7 +66,7 @@ public class ApiTests {
   
   @Test
   @DisplayName("Verify status code is 200 when getting an existing product")
-  public void StatusCodeIs200() {
+  public void StatusCode200() {
     String endpoint = baseUrl + "product/read_one.php"; // create endpoint variable to use in the test case
   
     // read one product by query param id in the given section 
@@ -107,7 +107,7 @@ public class ApiTests {
   // test case for verifying fields in an array of products 
 
   @Test
-  @DisplayName("Verify that fields of products list are not empty")
+  @DisplayName("Verify that fields of an existing products list are not empty")
   public void ProductListFields() {
     String endpoint = baseUrl + "product/read.php"; // create endpoint variable to use in the test case
 
